@@ -1,0 +1,33 @@
+name: Conditional GitHub Pages Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    if: contains(github.event.head_commit.message, 'ghp-deploy')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js (if your site is built with Node, remove if not needed)
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Build site
+        run: |
+          # Put your build commands here, e.g.:
+          # npm install
+          # npm run build
+          echo "Building site..."
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public  # Change to your build output folder

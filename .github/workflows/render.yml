@@ -5,18 +5,28 @@ on:
 
 jobs:
   render:
+    name: Trigger
     runs-on: ubuntu-latest
     steps:
-      - name: Check commit messages for [render]
+      # 1. Checkout the repo so we have git info
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Check commit messages for [render]
+      - name: Check commit messages
         id: check
         run: |
-          # Check if any commit message contains [render]
-          if git log -1 --pretty=%B | grep -q "\[render\]"; then
-            echo "trigger=true" >> $GITHUB_OUTPUT
-          else
-            echo "trigger=false" >> $GITHUB_OUTPUT
-          fi
+          # Look at all commits in this push
+          TRIGGER=false
+          for msg in $(git log origin/main..HEAD --pretty=%B); do
+            if [[ "$msg" == *"[render]"* ]]; then
+              TRIGGER=true
+              break
+            fi
+          done
+          echo "trigger=$TRIGGER" >> $GITHUB_OUTPUT
 
+      # 3. Send HTTP request if triggered
       - name: HTTP Request
         if: steps.check.outputs.trigger == 'true'
         run: |

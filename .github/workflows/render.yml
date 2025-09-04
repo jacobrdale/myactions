@@ -4,14 +4,14 @@ on:
   push:
 
 jobs:
-  Trigger_Render:
+  render:
     runs-on: ubuntu-latest
     steps:
-      - name: Send HTTP if [render] in any commit
+      - name: Check commits for [render] and send HTTP
         run: |
-          # Loop through commits in the push
           TRIGGER=false
-          for msg in "${{ github.event.commits[*].message }}"; do
+          # Loop through all commits in the push
+          for msg in $(jq -r '.commits[].message' "$GITHUB_EVENT_PATH"); do
             if [[ "$msg" == *"[render]"* ]]; then
               TRIGGER=true
               break
@@ -20,7 +20,8 @@ jobs:
 
           if [ "$TRIGGER" = true ]; then
             echo "Triggering HTTP request..."
-            curl -X POST https://your-url.com/trigger
+            curl -X POST https://api.render.com/deploy/srv-d1vcbfruibrs7399a6hg?key=S4So0UPj34Q
           else
             echo "No [render] in commit messages, skipping."
           fi
+        shell: bash
